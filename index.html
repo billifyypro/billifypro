@@ -3,117 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Billify Pro</title>
+    <title>Console | Billify</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-dark: #0b0e14; --bg-card: #151a23; --text-main: #f8fafc; --accent: #3b82f6; --success: #22c55e; --warning: #eab308; --danger: #ef4444; --border: #27272a; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; font-family: 'Outfit', sans-serif; background: var(--bg-dark); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
-
-        .mobile-header { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: var(--bg-card); border-bottom: 1px solid var(--border); z-index: 50; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; }
-        .sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; z-index: 60; transition: transform 0.3s ease; }
-        .nav-item { padding: 14px; margin-bottom: 8px; border-radius: 10px; cursor: pointer; color: #94a3b8; transition: 0.2s; display: flex; align-items: center; gap: 12px; font-weight: 500; }
-        .nav-item.active { background: var(--accent); color: white; }
-        .main { flex: 1; padding: 80px 20px 20px 20px; overflow-y: auto; position: relative; }
-        .page { display: none; animation: fadeIn 0.4s ease; }
-        .page.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .card { background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; }
-        .btn { padding: 12px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; }
-        .btn-primary { background: var(--accent); color: white; }
-        input { width: 100%; padding: 12px; background: #0b0e14; border: 1px solid var(--border); color: white; border-radius: 6px; margin-bottom: 10px; }
-
-        /* PREMIUM PLAN CARD */
-        .premium-plan { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; transition: 0.3s; display: flex; flex-direction: column; }
-        .premium-plan:hover { transform: translateY(-5px); border-color: var(--accent); }
-        .plan-hero { width: 100%; height: 150px; object-fit: cover; }
-        .plan-body { padding: 15px; flex: 1; display: flex; flex-direction: column; }
-        .plan-title { font-size: 1.3rem; font-weight: 700; color: white; margin-bottom: 5px; }
-        .plan-price { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 5px 0 15px 0; }
-        .plan-desc { color: #94a3b8; font-size: 0.9rem; margin-bottom: 15px; white-space: pre-wrap; flex: 1; }
-
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; top: 0; bottom: 0; left: 0; transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
+        :root {
+            --bg: #030712;
+            --sidebar: #0b0f19;
+            --card: #111827;
+            --border: #1f2937;
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.15);
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --warning: #f59e0b;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { width: 260px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px; z-index: 50; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: white; margin-bottom: 40px; display: flex; align-items: center; gap: 12px; letter-spacing: -0.03em; }
+        .logo i { color: var(--primary); filter: drop-shadow(0 0 10px var(--primary)); }
+        
+        .nav-item { padding: 12px 16px; margin-bottom: 6px; border-radius: 12px; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; gap: 12px; font-weight: 500; transition: all 0.2s; border: 1px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,0.03); color: white; }
+        .nav-item.active { background: rgba(99, 102, 241, 0.1); color: var(--primary); border-color: rgba(99, 102, 241, 0.2); }
+
+        /* MAIN */
+        .main { flex: 1; padding: 32px; overflow-y: auto; position: relative; }
+        .page { display: none; animation: fadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .page.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* CARDS */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 24px; border-radius: 20px; position: relative; transition: 0.3s; }
+        .card:hover { border-color: #374151; transform: translateY(-4px); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5); }
+
+        /* HERO CARD (SUBSCRIPTION) */
+        .sub-hero { background: linear-gradient(145deg, #1f2937 0%, #111827 100%); display: flex; justify-content: space-between; align-items: center; }
+        .status-dot { height: 8px; width: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); display: inline-block; margin-right: 8px; }
+        
+        .progress-ring { width: 80px; height: 80px; position: relative; }
+        .progress-ring circle { fill: transparent; stroke-width: 6; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50% 50%; }
+        .ring-bg { stroke: #374151; }
+        .ring-val { stroke: var(--success); transition: stroke-dashoffset 1s; }
+        .ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; }
+        .ring-text span { font-size: 0.6rem; color: var(--text-muted); font-weight: 500; text-transform: uppercase; }
+
+        /* ELEMENTS */
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; background: var(--primary); color: white; font-weight: 600; cursor: pointer; margin-top: 10px; font-size: 0.95rem; transition: 0.2s; }
+        .btn:hover { background: #4f46e5; box-shadow: 0 0 20px var(--primary-glow); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { border-color: var(--text-muted); }
+        .renew-btn { background: var(--warning); color: #000; }
+        .renew-btn:hover { background: #d97706; box-shadow: 0 0 15px rgba(245, 158, 11, 0.3); }
+
+        input { width: 100%; background: #030712; border: 1px solid var(--border); padding: 14px; color: white; border-radius: 12px; margin-bottom: 12px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-glow); }
+
+        /* FREE TRIAL CARD */
+        .free-card { border: 1px solid rgba(16, 185, 129, 0.2); background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.05), transparent 40%), var(--card); }
+        .free-badge { position: absolute; top: 15px; right: 15px; background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 4px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.2); }
+
+        /* MODAL */
+        #modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 100; align-items: center; justify-content: center; }
+        .modal-box { background: var(--sidebar); width: 90%; max-width: 420px; padding: 30px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 20px 50px -10px rgba(0,0,0,0.5); }
+
+        /* MOBILE NAV */
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(11, 15, 25, 0.9); backdrop-filter: blur(12px); border-top: 1px solid var(--border); z-index: 100; padding: 12px 24px; justify-content: space-between; }
+        .b-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); font-size: 0.7rem; gap: 4px; }
+        .b-item.active { color: var(--primary); }
+        .b-item i { font-size: 1.25rem; }
+
+        @media (max-width: 768px) { .sidebar { display: none; } .bottom-nav { display: flex; } .main { padding: 24px 20px 100px 20px; } }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
-    <div class="mobile-header">
-        <div onclick="document.querySelector('.sidebar').classList.toggle('open')" style="font-size:1.5rem; color:white;"><i class="fa-solid fa-bars"></i></div>
-        <div style="font-weight:800; font-size:1.2rem; color:white;">Billify<span style="color:var(--accent)">Pro</span></div>
-        <div></div>
-    </div>
-
     <div class="sidebar">
-        <div class="nav-item active" onclick="nav('subs')">💎 Subscriptions</div>
-        <div class="nav-item" onclick="nav('create')">🚀 Launch Free</div>
-        <div class="nav-item" onclick="nav('history')">🌐 Websites</div>
-        <div class="nav-item" onclick="nav('settings')">👤 Profile</div>
+        <div class="logo"><i class="fa-solid fa-bolt"></i> Billify Pro</div>
+        <div class="nav-item active" onclick="nav('home')"><i class="fa-solid fa-grid-2"></i> Dashboard</div>
+        <div class="nav-item" onclick="nav('plans')"><i class="fa-solid fa-rocket"></i> Membership</div>
+        <div class="nav-item" onclick="nav('designs')"><i class="fa-solid fa-palette"></i> Themes</div>
+        <div class="nav-item" onclick="nav('profile')"><i class="fa-solid fa-user-gear"></i> Settings</div>
     </div>
 
     <div class="main">
         
-        <!-- 1. PLANS -->
-        <div id="pg-subs" class="page active">
-            <h2>Premium Plans</h2>
-            <div id="dynamic-plans" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:20px;"></div>
-            <h3 style="margin-top:30px;">Active</h3>
-            <div id="active-subs-container"><p style="color:#64748b">Loading...</p></div>
+        <div id="pg-home" class="page active">
+            <h2>Dashboard</h2>
+            
+            <div id="design-alert" style="display:none; padding:12px 16px; background:rgba(99,102,241,0.1); border:1px solid var(--primary); border-radius:12px; color:var(--primary); margin-bottom:24px; align-items:center; gap:10px;">
+                <i class="fa-solid fa-check-circle"></i> Design Selected: <b id="da-name">None</b>
+            </div>
+
+            <div id="active-subs" class="grid">Loading...</div>
+            <h3 style="margin-top:40px; border-bottom:1px solid var(--border); padding-bottom:10px;">My Websites</h3>
+            <div id="web-list" class="grid"></div>
         </div>
 
-        <!-- 2. CREATE FREE (AUTOMATED) -->
-        <div id="pg-create" class="page">
-            <div class="card" style="max-width:500px; margin:auto;">
-                <h2>Free Website</h2>
-                <div id="free-status-box"></div>
-                <div id="create-form">
-                    <input id="free-name" placeholder="Website Name">
-                    <button class="btn-primary btn" onclick="createFree()">Launch Instantly ⚡</button>
-                </div>
+        <div id="pg-plans" class="page">
+            <h2>Plans</h2>
+            <div id="free-trial-container" style="margin-bottom:30px;"></div>
+            <div id="plans-container" class="grid">Loading...</div>
+        </div>
+
+        <div id="pg-designs" class="page"><h2>Design Gallery</h2><div id="design-list" class="grid">Loading...</div></div>
+
+        <div id="pg-profile" class="page">
+            <div class="card" style="max-width:500px">
+                <h3>Account Settings</h3>
+                <label style="color:var(--text-muted); font-size:0.85rem;">Full Name</label>
+                <input id="p-name" placeholder="John Doe">
+                <label style="color:var(--text-muted); font-size:0.85rem;">Mobile</label>
+                <input id="p-mobile" placeholder="9876543210">
+                <label style="color:var(--primary); font-size:0.85rem;">Payment App Name (Required)</label>
+                <input id="p-payname" placeholder="e.g. Rahul (PhonePe)">
+                <button class="btn" onclick="saveProfile()">Update Profile</button>
             </div>
         </div>
-
-        <!-- 3. PROFILE (With Payment Name) -->
-        <div id="pg-settings" class="page">
-            <div class="card" style="max-width:500px;">
-                <h3>Profile</h3>
-                <label style="color:#94a3b8">Name</label><input id="s-name" placeholder="Name">
-                <label style="color:#94a3b8">Mobile</label><input id="s-mobile" placeholder="Mobile">
-                <label style="color:#94a3b8">Email</label><input id="s-email" placeholder="Email">
-                <label style="color:var(--accent)">Payment App Name (For Verification)</label>
-                <input id="s-payname" placeholder="e.g. Rahul (GPay)" style="border-color:var(--accent)">
-                <button class="btn-primary btn" onclick="saveProf()">Save</button>
-            </div>
-        </div>
-
-        <div id="pg-history" class="page"><h2>Websites</h2><div id="hist-list"></div></div>
     </div>
 
-    <!-- BUY MODAL -->
-    <div id="buy-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.95); z-index:100; align-items:center; justify-content:center; padding:20px;">
-        <div class="card" style="width:100%; max-width:400px; max-height:90vh; overflow-y:auto;">
-            <div id="step-1">
-                <h3>Details</h3>
-                <p>Plan: <b id="m-plan" style="color:var(--accent)"></b> ₹<b id="m-price"></b></p>
-                <input id="m-site" placeholder="Website Name">
-                <input id="m-mobile" placeholder="Mobile">
-                <button class="btn-primary btn" onclick="toStep2()">Next</button> 
-                <button class="btn" style="background:transparent; border:1px solid #555" onclick="closeModal()">Cancel</button>
+    <div class="bottom-nav">
+        <div class="b-item active" onclick="nav('home')"><i class="fa-solid fa-house"></i> Home</div>
+        <div class="b-item" onclick="nav('plans')"><i class="fa-solid fa-gem"></i> Plans</div>
+        <div class="b-item" onclick="nav('designs')"><i class="fa-solid fa-brush"></i> Design</div>
+        <div class="b-item" onclick="nav('profile')"><i class="fa-solid fa-user"></i> Profile</div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <h3 id="m-title" style="margin-top:0">Order Summary</h3>
+            <div style="background:#030712; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:0.9rem; color:var(--text-muted);">
+                    <span>Plan</span> <b id="m-plan" style="color:white">Gold</b>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:1.1rem;">
+                    <span>Total</span> <b style="color:var(--success)">₹<span id="m-price">0</span></b>
+                </div>
             </div>
-            <div id="step-2" style="display:none;">
-                <h3>Pay</h3>
-                <img id="qr-img" style="width:200px; display:block; margin:auto; border-radius:10px;">
-                <p style="text-align:center">Pay ₹<span id="m-price-2"></span></p>
-                <label style="color:#94a3b8">Payer Name</label><input id="m-payer" placeholder="Your Name">
-                <label style="color:#94a3b8">Txn ID</label><input id="m-txn" placeholder="UTR">
-                <button class="btn-primary btn" style="background:var(--success)" onclick="pay()">Submit Order</button> 
-                <button class="btn" style="background:transparent; border:1px solid #555" onclick="closeModal()">Back</button>
+            
+            <div id="step-1">
+                <input id="m-site" placeholder="Website Name">
+                <button class="btn" onclick="toStep2()">Proceed to Pay</button>
+                <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            </div>
+
+            <div id="step-2" style="display:none; text-align:center;">
+                <img id="qr-img" style="width:180px; height:180px; border-radius:12px; margin:0 auto 15px auto; display:block; background:white; padding:5px; object-fit:contain;">
+                <p style="color:var(--text-muted); margin-bottom:15px;">Scan & Pay ₹<span id="m-price-2"></span></p>
+                <input id="m-txn" placeholder="Enter Transaction ID (UTR)">
+                <button class="btn" onclick="submitOrder()">Confirm Order</button>
+                <button class="btn btn-outline" onclick="document.getElementById('step-2').style.display='none'; document.getElementById('step-1').style.display='block'">Back</button>
             </div>
         </div>
     </div>
@@ -123,108 +170,108 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         let uid = localStorage.getItem('bp_uid');
-        if(!uid) { uid='u_'+Date.now(); localStorage.setItem('bp_uid', uid); }
-        let tmp={};
+        if(!uid) { uid = 'u_'+Date.now(); localStorage.setItem('bp_uid', uid); }
 
-        function nav(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('pg-'+id).classList.add('active');document.querySelector('.sidebar').classList.remove('open');}
-        window.onload = () => { loadPlans(); loadSubs(); loadProf(); checkFree(); loadHist(); };
+        let tempOrder={}, selectedDesign=null, isRenew=false, renewId=null;
 
-        // 1. AUTOMATED FREE SITE LOGIC
-        async function createFree() {
-            const n = document.getElementById('free-name').value;
-            if(!n) return alert("Enter Name");
-
-            const snap = await db.ref('settings/autoFreeUrl').get();
-            const autoUrl = snap.val();
-
-            if(autoUrl) {
-                db.ref('users/'+uid).update({freeUsed:true});
-                db.ref('websites').push({owner:uid, name:n, status:'live', url:autoUrl, createdAt:Date.now()});
-                alert("Success! Your website is LIVE instantly.");
-                nav('history');
-            } else {
-                db.ref('users/'+uid).update({freeUsed:true});
-                db.ref('websites').push({owner:uid, name:n, status:'processing', createdAt:Date.now()});
-                alert("Request Sent! Admin will approve shortly (Auto-link not set).");
-            }
+        function nav(id){
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            document.querySelectorAll('.nav-item, .b-item').forEach(n=>n.classList.remove('active'));
+            document.getElementById('pg-'+id).classList.add('active');
+            const idx=['home','plans','designs','profile'].indexOf(id);
+            if(idx>-1){ document.querySelectorAll('.nav-item')[idx].classList.add('active'); document.querySelectorAll('.b-item')[idx].classList.add('active'); }
         }
 
-        function checkFree(){
-            db.ref('users/'+uid).on('value',s=>{
-                if(s.val()&&s.val().freeUsed){
-                    document.getElementById('free-status-box').innerHTML="<div style='color:orange; background:rgba(255,165,0,0.1); padding:10px; border-radius:5px;'>Limit Reached</div>";
-                    document.getElementById('create-form').style.display='none';
+        window.onload = () => { loadSubs(); loadPlans(); loadDesigns(); loadProfile(); loadHistory(); checkFreeTrial(); };
+
+        // 1. FREE TRIAL
+        function checkFreeTrial(){
+            db.ref('users/'+uid).on('value', s=>{
+                const u=s.val()||{};
+                const c=document.getElementById('free-trial-container');
+                if(u.freeUsed){
+                    c.innerHTML=`<div class="card" style="opacity:0.5; border:1px dashed #333; padding:15px;"><div style="display:flex; justify-content:space-between; align-items:center;"><div><h4 style="margin:0; color:var(--text-muted)">Free Trial</h4><small>Claimed</small></div><i class="fa-solid fa-lock" style="color:var(--text-muted)"></i></div></div>`;
                 } else {
-                    document.getElementById('free-status-box').innerHTML="<div style='color:#4ade80; background:rgba(74,222,128,0.1); padding:10px; border-radius:5px;'>1 Free Credit Available</div>";
-                    document.getElementById('create-form').style.display='block';
+                    c.innerHTML=`<div class="card free-card"><div class="free-badge">GIFT</div><h3 style="margin:0 0 8px 0;">Free Trial</h3><p style="color:var(--text-muted); font-size:0.9rem;">Launch a demo site instantly.</p><div style="display:flex; gap:10px;"><input id="free-name" placeholder="Site Name" style="margin:0"><button class="btn" style="width:auto; margin:0;" onclick="claimFree()">Launch</button></div></div>`;
                 }
             });
         }
+        async function claimFree(){
+            const n=document.getElementById('free-name').value;
+            if(!n) return alert("Enter Name");
+            const url=(await db.ref('settings/autoFreeUrl').get()).val();
+            if(url) { db.ref('websites').push({owner:uid,name:n,url:url,status:'live'}); } 
+            else { db.ref('websites').push({owner:uid,name:n,status:'processing'}); }
+            db.ref('users/'+uid).update({freeUsed:true}); alert("Done!"); nav('home');
+        }
 
-        // 2. PREMIUM PLANS
-        function loadPlans() {
-            db.ref('plans').on('value',s=>{
-                const d=document.getElementById('dynamic-plans'); d.innerHTML='';
-                if(s.exists()) s.forEach(c=>{
-                    const p=c.val();
-                    d.innerHTML+=`<div class="premium-plan">
-                        <img src="${p.img||'https://via.placeholder.com/300x150'}" class="plan-hero">
-                        <div class="plan-body">
-                            <div class="plan-title">${p.name}</div>
-                            <div class="plan-price">₹${p.price}</div>
-                            <div class="plan-desc">${p.desc||''}</div>
-                            <button class="btn-primary btn" onclick="checkProfileAndBuy('${p.name}',${p.price},${p.days})">Select Plan</button>
-                        </div>
-                    </div>`;
+        // 2. DASHBOARD
+        function loadSubs(){
+            db.ref('subscriptions').orderByChild('uid').equalTo(uid).on('value', s=>{
+                const el=document.getElementById('active-subs'); el.innerHTML='';
+                if(!s.exists()) return el.innerHTML=`<div class="card" style="text-align:center; color:var(--text-muted); border-style:dashed;">No active plans.</div>`;
+                s.forEach(c=>{
+                    const sub=c.val();
+                    if(sub.status==='active'){
+                        const days = Math.max(0, Math.ceil((sub.expiryDate - Date.now())/86400000));
+                        const total = sub.durationDays || 30;
+                        const p = (days/total)*100;
+                        const circum=226; const offset=circum-((p/100)*circum);
+                        
+                        // Hide Renew if Free/Zero Price
+                        const showRenew = sub.price && parseInt(sub.price) > 0;
+
+                        el.innerHTML+=`
+                        <div class="card sub-hero">
+                            <div>
+                                <div style="margin-bottom:8px;"><span class="status-dot"></span> <span style="font-size:0.8rem; font-weight:600; color:var(--text-muted)">ACTIVE</span></div>
+                                <h3 style="margin:0 0 4px 0;">${sub.websiteName}</h3>
+                                <p style="color:var(--text-muted); margin:0; font-size:0.9rem;">${sub.planName}</p>
+                                <div style="margin-top:15px; display:flex; gap:10px;">
+                                    ${showRenew ? `<button class="btn renew-btn" style="margin:0; width:auto; padding:8px 16px;" onclick="openBuy('${sub.planName}', '${sub.price}', '${sub.durationDays}', true, '${c.key}', '${sub.websiteName}')">Renew</button>` : ''}
+                                    <a href="${sub.websiteUrl}" target="_blank" class="btn btn-outline" style="margin:0; width:auto; padding:8px 16px; text-decoration:none;">Open</a>
+                                </div>
+                            </div>
+                            <div class="progress-ring"><svg><circle class="circle-bg" cx="45" cy="45" r="36"></circle><circle class="circle-val" cx="45" cy="45" r="36" style="stroke-dasharray:${circum}; stroke-dashoffset:${offset}"></circle></svg><div class="circle-text">${days}<span>DAYS</span></div></div>
+                        </div>`;
+                    }
                 });
             });
         }
 
-        // 3. PROFILE ENFORCEMENT
-        async function checkProfileAndBuy(n, p, d) {
-            const snap = await db.ref('users/'+uid+'/profile').get();
-            const prof = snap.val();
-            if(!prof || !prof.name || !prof.mobile || !prof.payName) {
-                alert("Please fill your Name, Mobile, and Payment App Name in the Profile section first!");
-                nav('settings');
-            } else {
-                buy(n, p, d);
-            }
-        }
+        // 3. OTHER
+        function loadPlans(){ db.ref('plans').on('value', s=>{ const el=document.getElementById('plans-container'); el.innerHTML=''; if(s.exists()) s.forEach(c=>{ const p=c.val(); el.innerHTML+=`<div class="card"><h3>${p.name}</h3><p style="color:var(--text-muted); font-size:0.9rem;">${p.desc||''}</p><h1 style="color:var(--primary); margin:12px 0;">₹${p.price}</h1><button class="btn" onclick="openBuy('${p.name}', '${p.price}', '${p.days}', false)">Select Plan</button></div>` }) }); }
+        function loadDesigns(){ db.ref('portfolios').on('value', s=>{ const el=document.getElementById('design-list'); el.innerHTML=''; if(s.exists()) s.forEach(c=>{ const d=c.val(); const sel=selectedDesign===d.name; el.innerHTML+=`<div class="card" style="border-color:${sel?'var(--success)':'var(--border)'}; cursor:pointer;" onclick="selDes('${d.name}')">${sel?'<small style="color:var(--success)">SELECTED</small><br>':''}<b>${d.name}</b><br><a href="${d.url}" style="color:var(--primary); font-size:0.9rem;">Preview</a></div>` }) }); }
+        function selDes(n){ selectedDesign=n; document.getElementById('design-alert').style.display='flex'; document.getElementById('da-name').innerText=n; loadDesigns(); nav('home'); }
+        function loadHistory(){ db.ref('websites').orderByChild('owner').equalTo(uid).on('value', s=>{ const el=document.getElementById('web-list'); el.innerHTML=''; if(s.exists()) s.forEach(c=>{ const w=c.val(); el.innerHTML+=`<div class="card" style="padding:15px; display:flex; justify-content:space-between; align-items:center;"><b>${w.name}</b> <a href="${w.url}" target="_blank" style="color:var(--text-main); font-size:0.85rem; background:rgba(255,255,255,0.1); padding:6px 12px; border-radius:8px; text-decoration:none;">Open</a></div>` }) }); }
 
-        function saveProf(){
-            db.ref('users/'+uid+'/profile').set({
-                name:document.getElementById('s-name').value,
-                email:document.getElementById('s-email').value,
-                mobile:document.getElementById('s-mobile').value,
-                payName:document.getElementById('s-payname').value
-            }).then(()=>alert("Saved"));
+        // 4. BUY & RENEW
+        async function openBuy(n,p,d,renew,key,site){
+            const prof = await db.ref('users/'+uid+'/profile').get();
+            if(!prof.exists() || !prof.val().payName) { alert("Complete Profile"); nav('profile'); return; }
+            tempOrder={n,p,d}; isRenew=renew; renewId=key;
+            document.getElementById('m-title').innerText=renew?"Renew Plan":"New Order";
+            document.getElementById('m-plan').innerText=n; document.getElementById('m-price').innerText=p; document.getElementById('m-price-2').innerText=p;
+            const si=document.getElementById('m-site'); if(renew){si.value=site; si.readOnly=true;} else {si.value=""; si.readOnly=false;}
+            document.getElementById('modal-overlay').style.display='flex'; document.getElementById('step-1').style.display='block'; document.getElementById('step-2').style.display='none';
         }
-        function loadProf(){
-            db.ref('users/'+uid+'/profile').once('value',s=>{
-                const v=s.val();
-                if(v){
-                    document.getElementById('s-name').value=v.name||'';
-                    document.getElementById('s-email').value=v.email||'';
-                    document.getElementById('s-mobile').value=v.mobile||'';
-                    document.getElementById('s-payname').value=v.payName||'';
-                    // Auto-fill buy modal
-                    document.getElementById('m-mobile').value=v.mobile||'';
-                    document.getElementById('m-payer').value=v.payName||'';
-                }
-            });
-        }
-
-        // 4. BUY
-        function buy(n,p,d){ tmp={n,p,d}; document.getElementById('m-plan').innerText=n; document.getElementById('m-price').innerText=p; document.getElementById('m-price-2').innerText=p; document.getElementById('buy-modal').style.display='flex'; document.getElementById('step-1').style.display='block'; document.getElementById('step-2').style.display='none'; }
-        function toStep2(){ if(document.getElementById('m-site').value){ db.ref('settings/qrCodeUrl').once('value').then(s=>{ document.getElementById('qr-img').src=s.val()||""; document.getElementById('step-1').style.display='none'; document.getElementById('step-2').style.display='block'; }); } else alert("Site Name Required"); }
-        function pay(){ if(document.getElementById('m-txn').value){ db.ref('subscriptions').push({uid:uid, planName:tmp.n, price:tmp.p, durationDays:tmp.d, websiteName:document.getElementById('m-site').value, mobile:document.getElementById('m-mobile').value, payerName:document.getElementById('m-payer').value, txnId:document.getElementById('m-txn').value, status:'pending'}).then(()=>{ closeModal(); alert("Order Sent"); }); } }
-        function closeModal(){ document.getElementById('buy-modal').style.display='none'; }
+        function toStep2(){ if(!document.getElementById('m-site').value) return alert("Name?"); db.ref('settings/qrCodeUrl').once('value', s=>{ document.getElementById('qr-img').src=s.val()||''; document.getElementById('step-1').style.display='none'; document.getElementById('step-2').style.display='block'; }); }
         
-        function loadSubs(){ db.ref('subscriptions').orderByChild('uid').equalTo(uid).on('value',s=>{ const a=document.getElementById('active-subs-container'); a.innerHTML=''; s.forEach(c=>{ const v=c.val(); if(v.status==='active'){ const d=Math.ceil((v.expiryDate-Date.now())/86400000); if(d>0) a.innerHTML+=`<div class="card" style="border:1px solid var(--success)"><h3>${v.planName}</h3><p>${v.websiteName}</p><b>${d} Days Left</b><a href="${v.websiteUrl}" target="_blank" style="display:block;margin-top:5px;color:var(--success)">OPEN SITE</a></div>`; } }); }); }
-        function loadHist(){ db.ref('websites').orderByChild('owner').equalTo(uid).on('value',s=>{ const l=document.getElementById('hist-list'); l.innerHTML=''; s.forEach(c=>{ const w=c.val(); const lnk=w.status==='live'?`<a href="${w.url}" target="_blank" style="color:var(--success)">OPEN</a>`:`Processing`; l.innerHTML+=`<div class="card"><b>${w.name}</b> <span style="float:right">${lnk}</span></div>`; }); }); }
+        async function submitOrder(){
+            const txn=document.getElementById('m-txn').value; if(!txn) return alert("Txn?");
+            const prof=(await db.ref('users/'+uid+'/profile').get()).val();
+            const d={
+                uid:uid, 
+                name:prof.name, mobile:prof.mobile, payerName:prof.payName, // Full Details
+                planName:tempOrder.n, price:tempOrder.p, durationDays:tempOrder.d, 
+                websiteName:document.getElementById('m-site').value, selectedDesign:selectedDesign||'Standard', txnId:txn, orderDate:Date.now()
+            };
+            if(isRenew){ d.type='renewal'; d.originalSubId=renewId; db.ref('renewals').push(d); } else { d.status='pending'; db.ref('subscriptions').push(d); }
+            alert("Submitted!"); closeModal();
+        }
+        function closeModal(){ document.getElementById('modal-overlay').style.display='none'; }
+        function saveProfile(){ db.ref('users/'+uid+'/profile').set({name:document.getElementById('p-name').value, mobile:document.getElementById('p-mobile').value, payName:document.getElementById('p-payname').value}).then(()=>alert("Saved")); }
+        function loadProfile(){ db.ref('users/'+uid+'/profile').once('value', s=>{ if(s.exists()){ const v=s.val(); document.getElementById('p-name').value=v.name; document.getElementById('p-mobile').value=v.mobile; document.getElementById('p-payname').value=v.payName; }}); }
     </script>
 </body>
 </html>
-
-
