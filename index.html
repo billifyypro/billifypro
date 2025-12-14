@@ -118,15 +118,18 @@
             .main { padding: 20px; padding-bottom: 110px; } 
             h2 { font-size: 1.5rem; } 
             
-            /* UPDATED: 2x2 Grid for Mobile */
-            .grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
-            .theme-card { padding: 12px; }
-            .theme-card h4 { font-size: 0.95rem; margin-top: 5px; margin-bottom: 5px; }
-            .theme-card p { display: none; } /* Hide desc on mobile to save space */
-            .theme-img { height: 110px; margin-bottom: 8px; }
-            .theme-card .btn { padding: 8px; font-size: 0.8rem; }
-            
             .auth-card { padding: 25px; }
+
+            /* Default Grid: 1 Column */
+            .grid { grid-template-columns: 1fr; }
+
+            /* --- THEME SPECIFIC MOBILE FIX --- */
+            #pg-themes .grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
+            #pg-themes .theme-card { padding: 12px; }
+            #pg-themes .theme-card h4 { font-size: 0.95rem; margin-top: 5px; margin-bottom: 5px; }
+            #pg-themes .theme-card p { display: none; } /* Hide desc on mobile */
+            #pg-themes .theme-img { height: 110px; margin-bottom: 8px; }
+            #pg-themes .theme-card .btn { padding: 8px; font-size: 0.8rem; }
         }
         
         @media (min-width: 769px) {
@@ -387,12 +390,32 @@
         }
 
         function loadPlans(){
-            db.ref('plans').on('value',s=>{
+            db.ref('plans').on('value', async s=>{
                 const p=document.getElementById('plans-container');
                 p.innerHTML=''; 
+                
+                // Fetch User & Device status for "Almost Free" offer
+                const uData = (await db.ref('users/'+uid).get()).val();
+                const deviceUsed = localStorage.getItem('billify_promo_used');
+                const isPromoEligible = !uData.almostFreeUsed && !deviceUsed;
+
                 if(s.exists()) s.forEach(doc=>{
                     const v=doc.val();
-                    const h = `<div class="card"><h3>${v.name}</h3><div style="font-size:2rem; font-weight:700; margin:10px 0;">₹${v.price}</div><p style="color:#999">${v.desc||''}</p><button class="btn" onclick="openBuy('${v.name}','${v.price}','${v.days}', false)">Choose Plan</button></div>`;
+                    let price = v.price;
+                    let btnText = "Choose Plan";
+                    let isPromo = false;
+
+                    // Check for Almost Free Offer
+                    if(v.almostFree && isPromoEligible){
+                        price = 19;
+                        btnText = "Claim for ₹19";
+                        isPromo = true;
+                    }
+
+                    let priceHtml = `₹${price}`;
+                    if(isPromo) priceHtml += ` <span style="font-size:0.9rem; color:var(--warning); text-decoration:line-through;">₹${v.price}</span> <br><small style="color:var(--success); font-size:0.8rem">First Month Only</small>`;
+
+                    const h = `<div class="card"><h3>${v.name}</h3><div style="font-size:2rem; font-weight:700; margin:10px 0;">${priceHtml}</div><p style="color:#999">${v.desc||''}</p><button class="btn" onclick="openBuy('${v.name}','${price}','${v.days}', false, null, ${isPromo})">${btnText}</button></div>`;
                     p.innerHTML+=h;
                 });
             });
@@ -437,7 +460,6 @@
                 const l = document.getElementById('theme-list'); l.innerHTML='';
                 if(s.exists()) s.forEach(doc=>{
                     const t = doc.val();
-                    // REMOVED PREVIEW BUTTON, ADDED ONCLICK TO IMAGE
                     l.innerHTML+=`
                     <div class="card theme-card" data-cat="${t.categoryId}">
                         <img src="${t.screenshot}" class="theme-img" onclick="openFullImage('${t.screenshot}')">
@@ -482,7 +504,6 @@
         
         const imgEl = document.getElementById('full-image');
         
-        // Zoom (Wheel)
         imgEl.addEventListener('wheel', (e) => {
             e.preventDefault();
             const delta = e.deltaY * -0.001;
@@ -490,7 +511,6 @@
             updateImageTransform();
         });
 
-        // Pan (Mouse/Touch)
         imgEl.addEventListener('mousedown', startPan);
         imgEl.addEventListener('touchstart', startPan);
 
@@ -544,7 +564,8 @@
             document.getElementById('chat-input').value='';
         }
 
-        async function openBuy(n,p,d, isRenew, wName=null){
+        // Updated openBuy to handle Promo logic
+        async function openBuy(n,p,d, isRenew, wName=null, isPromo=false){
             const prof = (await db.ref('users/'+uid+'/profile').get()).val();
             if(!prof.payName) return toast('warning','Update Profile Settings First');
             
@@ -554,7 +575,7 @@
             }
 
             isRenewal = isRenew;
-            tempOrder={n,p,d};
+            tempOrder={n,p,d, isPromo};
             document.getElementById('m-title').innerText=isRenew ? 'Renew Subscription' : 'New Subscription';
             document.getElementById('m-plan').innerText=n; 
             document.getElementById('m-price').innerText=p;
@@ -593,6 +614,13 @@
                         o.selectedDesign = tId; o.selectedThemeId = tId; o.selectedThemeName = localStorage.getItem('selectedThemeName');
                     }
                     db.ref('subscriptions').push(o);
+                    
+                    // MARK PROMO AS USED (SECURE)
+                    if(tempOrder.isPromo) {
+                        db.ref('users/'+uid).update({almostFreeUsed: true});
+                        localStorage.setItem('billify_promo_used', 'true');
+                    }
+
                     localStorage.removeItem('selectedThemeId'); localStorage.removeItem('selectedThemeName');
                     toast('success','Order Placed!'); 
                 });
@@ -600,8 +628,33 @@
             document.getElementById('modal-overlay').style.display='none';
         }
 
-        function checkFreeTrial(){ db.ref('users/'+uid).once('value',s=>{ if(!s.val().freeUsed) document.getElementById('free-trial-container').innerHTML=`<div class="card" style="border:1px solid var(--success); background:rgba(16, 185, 129, 0.1);"><h3>🎁 Free Trial Available</h3><p>Get a free demo website instantly.</p><button class="btn" style="width:auto; margin-top:10px; background:var(--success)" onclick="claimFree()">Claim Now</button></div>`; }); }
-        async function claimFree(){ const u=(await db.ref('settings/autoFreeUrl').get()).val(); db.ref('websites').push({owner:uid, name:'Free Trial Demo', url:u||'#', status:'live'}); db.ref('users/'+uid).update({freeUsed:true}); nav('home'); toast('success','Trial Claimed'); }
+        // --- FREE TRIAL FIX ---
+        function checkFreeTrial(){ 
+            db.ref('users/'+uid).once('value',s=>{ 
+                const u = s.val();
+                let btnHtml = '';
+                if(u.freeUsed || u.freeTrialClaimed) {
+                     btnHtml = `<div class="card" style="border:1px solid var(--border); background:rgba(255, 255, 255, 0.05); opacity:0.7"><h3>🎁 Free Trial</h3><p>You have claimed your free demo.</p><button class="btn" style="width:auto; margin-top:10px; background:#4b5563; cursor:not-allowed;" disabled>CLAIMED</button></div>`;
+                } else {
+                    btnHtml = `<div class="card" style="border:1px solid var(--success); background:rgba(16, 185, 129, 0.1);"><h3>🎁 Free Trial Available</h3><p>Get a free demo website instantly.</p><button class="btn" style="width:auto; margin-top:10px; background:var(--success)" onclick="claimFree()">Claim Now</button></div>`;
+                }
+                document.getElementById('free-trial-container').innerHTML=btnHtml; 
+            }); 
+        }
+        
+        async function claimFree(){ 
+            // Double check before claiming
+            const uData = (await db.ref('users/'+uid).get()).val();
+            if(uData.freeUsed || uData.freeTrialClaimed) return toast('error', 'Already Claimed');
+
+            const u=(await db.ref('settings/autoFreeUrl').get()).val(); 
+            db.ref('websites').push({owner:uid, name:'Free Trial Demo', url:u||'#', status:'live'}); 
+            db.ref('users/'+uid).update({freeUsed:true, freeTrialClaimed:true}); // Added strict flag
+            nav('home'); 
+            toast('success','Trial Claimed'); 
+            checkFreeTrial(); // Update UI immediately
+        }
+        
         function saveProfile(){ db.ref('users/'+uid+'/profile').update({name:document.getElementById('p-name').value, mobile:document.getElementById('p-mobile').value, payName:document.getElementById('p-payname').value}).then(()=>toast('success','Saved')); }
         function loadProfile(){ db.ref('users/'+uid).once('value',s=>{ const p=s.val().profile||{}; document.getElementById('p-name').value=p.name||''; document.getElementById('p-mobile').value=p.mobile||''; document.getElementById('p-payname').value=p.payName||''; document.getElementById('p-email').value=p.email||''; }); }
     </script>
